@@ -1,6 +1,8 @@
 import feedparser
 import json
 import urllib
+import urllib.parse
+import urllib.request
 
 from flask import Flask
 from flask import render_template
@@ -27,10 +29,11 @@ def get_news():
     return render_template("home.html",articles=feed['entries'],weather=weather)
 
 def get_weather(query):
-    api_url = http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=fa65bc89d9c04051e54e46bfd17b6917
-    query = urllib.quote(query)
+    #query = urllib.parse.urlencode(query);
+    api_url = "http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=fa65bc89d9c04051e54e46bfd17b6917"
+    query=urllib.parse.quote(query)
     url = api_url.format(query)
-    data = urllib.request.urlopen(url).read()
+    data = urllib.request.urlopen(url).read().decode('utf8')
     parsed = json.loads(data)
     if parsed.get("weather"):
         weather = {"description":
