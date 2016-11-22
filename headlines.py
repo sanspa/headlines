@@ -7,6 +7,9 @@ import urllib.request
 from flask import Flask
 from flask import render_template
 from flask import request
+from flask import make_response
+
+import datetime
 
 app = Flask(__name__)
 
@@ -28,7 +31,9 @@ def home():
     #mengambil nilai GET, sesuai input user
     publication = request.args.get('publication')
     if not publication:
-        publication = DEFAULTS['publication']
+        publication = request.cookies.get("publication")
+        if not publication:
+            publication = DEFAULTS['publication']
     articles = get_news(publication)
     #mengambil nama kota sesuai yang diinputkan user
     city=request.args.get('city')
@@ -48,9 +53,16 @@ def home():
     
     rate,currencies = get_rate(currency_from,currency_to)
     
-    return render_template("home.html",articles=articles,weather=weather,
-                           currency_from=currency_from, currency_to=currency_to,
-                           rate=rate,currencies=sorted(currencies))
+    response = make_response(render_template("home.html",articles=articles,
+               weather=weather,currency_from=currency_from,
+               currency_to=currency_to,
+               rate=rate,currencies=sorted(currencies)))
+    expires = datetime.datetime.now() + datetime.timedelta(days=365)
+    response.set_cookie("publication",publication,expires=expires)
+    response.set_cookie("city",city,expires=expires)
+    response.set_cookie("currency_from",currency_from,expires=expires)
+    response.set_cookie("currency_to",currency_to,expires=expires)
+    return response
 
 def get_news(query):
     if not query or query.lower() not in RSS_FEEDS:
